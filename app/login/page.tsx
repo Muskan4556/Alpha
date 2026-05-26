@@ -1,43 +1,64 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { BrandLogo } from "@/components/BrandLogo";
 import { ROLES } from "@/lib/data/roles";
 import type { Role } from "@/lib/types/auth";
+import { login } from "@/app/actions/auth";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [role, setRole] = useState<Role>("user");
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const empty = !username || !password;
+  const empty = !email || !password;
 
   function pick(r: Role) {
     setRole(r);
-    setUsername("");
+    setEmail("");
     setPassword("");
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (empty) return;
+
     setLoading(true);
-    setTimeout(() => setLoading(false), 1400);
+
+    try {
+      const result = await login({ email, password, role });
+
+      if (!result.success) {
+        toast.error(result.error);
+        setLoading(false);
+        return;
+      }
+
+      toast.success("Signed in successfully!");
+      router.push(result.redirectTo);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+      setLoading(false);
+    }
   }
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#0b1512] px-4 font-sans sm:px-6">
+      {/* Grid */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-size-[40px_40px]" />
-
+      {/* Glows */}
       <div className="pointer-events-none absolute top-[-15%] right-[-10%] h-[600px] w-[700px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.14)_0%,rgba(5,150,105,0.06)_40%,transparent_65%)]" />
-
       <div className="pointer-events-none absolute bottom-[-15%] left-[-10%] h-[500px] w-[500px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06)_0%,transparent_60%)]" />
-
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_90%_at_50%_50%,transparent_35%,rgba(11,21,18,0.85)_100%)]" />
 
       <div className="relative z-10 mb-6 flex items-center gap-2.5">
@@ -63,7 +84,7 @@ export default function LoginPage() {
                   variant="ghost"
                   onClick={() => pick(id)}
                   className={cn(
-                    "h-9 flex-1 gap-1.5 rounded-lg border text-[13px] font-semibold tracking-[-0.015em] transition-all",
+                    "h-9 flex-1 cursor-pointer gap-1.5 rounded-lg border text-[13px] font-semibold tracking-[-0.015em] transition-all",
                     active
                       ? "border-emerald-500 bg-emerald-500/12 text-emerald-400 hover:bg-emerald-500/16 hover:text-emerald-400"
                       : "border-white/8 bg-white/3 text-white/35 hover:border-white/14 hover:bg-white/5 hover:text-white/50",
@@ -76,30 +97,25 @@ export default function LoginPage() {
             })}
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-4 sm:gap-4"
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="space-y-[7px]">
               <label className="block text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/38">
-                Username
+                Email
               </label>
               <Input
-                type="text"
-                autoComplete="username"
-                placeholder="your-username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                autoComplete="email"
+                placeholder="you@alpha.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-10 rounded-[10px] border-white/8 bg-[#0c1714] px-[14px] text-[14px] tracking-[-0.01em] text-white/90 placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 sm:h-[42px]"
               />
             </div>
 
             <div className="space-y-[7px]">
-              <div className="flex items-center justify-between">
-                <label className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/38">
-                  Password
-                </label>
-              </div>
+              <label className="block text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/38">
+                Password
+              </label>
               <div className="relative">
                 <Input
                   type={show ? "text" : "password"}
@@ -131,7 +147,7 @@ export default function LoginPage() {
               type="submit"
               disabled={loading || empty}
               className={cn(
-                "mt-1 h-10 w-full rounded-[10px] border-0 text-[14.5px] font-semibold tracking-[-0.02em] gap-2 transition-all sm:h-11",
+                "mt-1 h-10 w-full cursor-pointer rounded-[10px] border-0 text-[14.5px] font-semibold tracking-[-0.02em] gap-2 transition-all sm:h-11",
                 empty || loading
                   ? "cursor-not-allowed bg-emerald-500/25 text-white/30"
                   : "bg-linear-to-br from-emerald-500 to-emerald-600 text-white shadow-[0_4px_24px_rgba(16,185,129,0.30)] hover:opacity-90 active:scale-[0.98]",
