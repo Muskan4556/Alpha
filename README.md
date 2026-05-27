@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alpha - Product Dashboard
 
-## Getting Started
+**Live demo:** [alpha-one-kappa.vercel.app](https://alpha-one-kappa.vercel.app/)
 
-First, run the development server:
+Next.js dashboard for browsing a product catalog ([DummyJSON](https://dummyjson.com/products)), with role-based access and admin publish controls.
+
+## Features
+
+- **Auth & RBAC** - Admin and user roles; route protection via `proxy.ts`
+- **Products** - Search, category filter, sort, pagination (URL-driven)
+- **Admin publish** - Hide/show products (stored in-memory on the server, not on DummyJSON)
+- **Analytics** - Catalog stats, charts, and insight tabs 
+- **Live-ish sync for users** - Refetch when returning to the products tab after admin changes
+
+## Tech stack
+
+- Next.js 16 (App Router), React 19, TypeScript
+- Server Actions (`app/actions/`)
+- Tailwind CSS, shadcn/ui, TanStack Table
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # production build
+npm run start   # production server
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Demo accounts
 
-## Learn More
+| Role  | Email            | Password  |
+|-------|------------------|-----------|
+| Admin | `admin@alpha.com` | `admin123` |
+| User  | `user@alpha.com`  | `user123`  |
 
-To learn more about Next.js, take a look at the following resources:
+**Admin:** `/analytics`, `/products`, `/profile`  
+**User:** `/products`, `/profile`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project layout (main files)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+app/actions/products.ts   # DummyJSON fetch, filters, pagination
+app/actions/publish.ts    # Admin visibility toggle
+lib/mock-db.ts            # Hidden product IDs (in-memory)
+lib/session-server.ts     # Session cookies
+proxy.ts                  # Auth route guard
+components/products/      # Catalog UI
+components/analytics/     # Dashboard & insights
+```
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Base: `https://dummyjson.com/products`
