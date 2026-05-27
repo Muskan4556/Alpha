@@ -60,15 +60,6 @@ export type SortOrder = "asc" | "desc";
 
 export type ProductInsightTab = "low-stock" | "latest" | "top-rated";
 
-export interface GetProductsParams {
-  limit?: number;
-  skip?: number;
-  search?: string;
-  category?: string;
-  sortBy?: SortField;
-  order?: SortOrder;
-}
-
 export const PAGE_SIZE = 10;
 
 export const SORT_MAP: Record<string, { sortBy: SortField; order: SortOrder }> =

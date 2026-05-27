@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { getInsights } from "@/app/actions/products";
+import { getInsightsFromCatalog } from "@/lib/analytics-insights";
 import { DataTable } from "@/components/ui/data-table";
-import { ProductInsightsSkeleton } from "@/components/skeleton/ProductInsightsSkeleton";
-import type { ProductInsightTab } from "@/lib/types/product";
-import type { Product } from "@/lib/types/product";
+import type { ProductInsightTab, Product } from "@/lib/types/product";
 import { cn, formatCategory } from "@/lib/utils";
 
 const TABS: { id: ProductInsightTab; label: string }[] = [
@@ -85,44 +83,13 @@ const insightColumns: ColumnDef<Product>[] = [
   ),
 ];
 
-export function ProductInsightsTable() {
+export function ProductInsightsTable({ catalog }: { catalog: Product[] }) {
   const [tab, setTab] = useState<ProductInsightTab>("low-stock");
-  const [rows, setRows] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const cacheRef = useRef<Partial<Record<ProductInsightTab, Product[]>>>({});
 
-  useEffect(() => {
-    let cancelled = false;
-    const cached = cacheRef.current[tab];
-
-    if (cached) {
-      setRows(cached);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    async function loadInsights() {
-      try {
-        const data = await getInsights(tab);
-        if (cancelled) return;
-        cacheRef.current[tab] = data;
-        setRows(data);
-      } catch {
-        if (cancelled) return;
-        setRows([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadInsights();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [tab]);
+  const rows = useMemo(
+    () => getInsightsFromCatalog(catalog, tab),
+    [catalog, tab],
+  );
 
   return (
     <div className="rounded-lg border border-white/8 bg-[#111e1a]">
@@ -152,16 +119,12 @@ export function ProductInsightsTable() {
         </div>
       </div>
 
-      {loading ? (
-        <ProductInsightsSkeleton />
-      ) : (
-        <DataTable
-          columns={insightColumns}
-          data={rows}
-          className="rounded-none border-0"
-          emptyMessage="No products in this view"
-        />
-      )}
+      <DataTable
+        columns={insightColumns}
+        data={rows}
+        className="rounded-none border-0"
+        emptyMessage="No products in this view"
+      />
     </div>
   );
 }

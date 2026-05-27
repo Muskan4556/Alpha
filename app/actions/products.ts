@@ -2,19 +2,17 @@
 
 import { hiddenProductIds } from "@/lib/mock-db";
 import { getSessionRole } from "@/lib/session-server";
+import type { Role } from "@/lib/types/auth";
 import {
   SORT_MAP,
   PAGE_SIZE,
   type Product,
-  type ProductInsightTab,
   type ProductsResponse,
   type SortField,
   type SortOrder,
 } from "@/lib/types/product";
 
 const BASE_URL = "https://dummyjson.com/products";
-const DEFAULT_API_LIMIT = 30;
-const CATALOG_SIZE = 194;
 
 const catalogRequest: RequestInit =
   process.env.NODE_ENV === "development"
@@ -28,8 +26,7 @@ function withPublishState(products: Product[]): Product[] {
   }));
 }
 
-async function applyRoleFilter(products: Product[]): Promise<Product[]> {
-  const role = await getSessionRole();
+function applyRoleFilter(products: Product[], role: Role | null): Product[] {
   let result = withPublishState(products);
   if (role === "user") {
     result = result.filter((p) => p.isPublished);
@@ -37,26 +34,20 @@ async function applyRoleFilter(products: Product[]): Promise<Product[]> {
   return result;
 }
 
+/** Count published products for users — reuses `apiTotal` from the page response (no extra probe). */
 async function countVisibleProducts(
-  search = "",
-  category = "",
-  sort = "",
+  search: string,
+  category: string,
+  sort: string,
+  apiTotal: number,
+  role: Role,
 ): Promise<number> {
+  if (apiTotal === 0) return 0;
+
   const { sortBy, order } = getSortQuery(sort);
 
-  const meta = await getProductList({
-    limit: 1,
-    skip: 0,
-    search: search || undefined,
-    category: category || undefined,
-    sortBy,
-    order,
-  });
-
-  if (meta.total === 0) return 0;
-
   const data = await getProductList({
-    limit: meta.total,
+    limit: apiTotal,
     skip: 0,
     search: search || undefined,
     category: category || undefined,
@@ -64,8 +55,7 @@ async function countVisibleProducts(
     order,
   });
 
-  const products = await applyRoleFilter(data.products);
-  return products.length;
+  return applyRoleFilter(data.products, role).length;
 }
 
 async function getProductList(options: {
@@ -77,7 +67,7 @@ async function getProductList(options: {
   order?: SortOrder;
 }): Promise<ProductsResponse> {
   const {
-    limit = DEFAULT_API_LIMIT,
+    limit = PAGE_SIZE,
     skip = 0,
     search,
     category,
@@ -144,11 +134,17 @@ export async function getProducts(
   });
 
   const role = await getSessionRole();
-  const products = await applyRoleFilter(data.products);
+  const products = applyRoleFilter(data.products, role);
 
   const total =
     role === "user"
-      ? await countVisibleProducts(search, category, sort)
+      ? await countVisibleProducts(
+          search,
+          category,
+          sort,
+          data.total,
+          role,
+        )
       : data.total;
 
   return {
@@ -165,17 +161,20 @@ async function getFullCatalog(
   sort = "",
 ): Promise<Product[]> {
   const { sortBy, order } = getSortQuery(sort);
-
-  const data = await getProductList({
-    limit: CATALOG_SIZE,
+  const listOptions = {
     skip: 0,
     search: search || undefined,
     category: category || undefined,
     sortBy,
     order,
-  });
+  };
 
-  return applyRoleFilter(data.products);
+  const meta = await getProductList({ limit: PAGE_SIZE, ...listOptions });
+  if (meta.total === 0) return [];
+
+  const data = await getProductList({ limit: meta.total, ...listOptions });
+  const role = await getSessionRole();
+  return applyRoleFilter(data.products, role);
 }
 
 export async function getProductById(id: number): Promise<Product | null> {
@@ -186,7 +185,8 @@ export async function getProductById(id: number): Promise<Product | null> {
   }
 
   const raw = (await res.json()) as Product;
-  const [product] = await applyRoleFilter([raw]);
+  const role = await getSessionRole();
+  const [product] = applyRoleFilter([raw], role);
 
   return product ?? null;
 }
@@ -199,36 +199,21 @@ export async function getCategories(): Promise<string[]> {
   return res.json() as Promise<string[]>;
 }
 
-export async function getInsights(tab: ProductInsightTab): Promise<Product[]> {
-  if (tab === "top-rated") {
-    const data = await getProductList({
-      limit: 10,
-      sortBy: "rating",
-      order: "desc",
-    });
-    return applyRoleFilter(data.products);
-  }
-
-  if (tab === "low-stock") {
-    const data = await getProductList({
-      limit: 50,
-      sortBy: "stock",
-      order: "asc",
-    });
-    const products = await applyRoleFilter(data.products);
-    return products.filter((p) => p.stock <= 10).slice(0, 10);
-  }
-
-  const all = await getFullCatalog();
-  return [...all]
-    .sort(
-      (a, b) =>
-        new Date(b.meta.createdAt).getTime() -
-        new Date(a.meta.createdAt).getTime(),
-    )
-    .slice(0, 10);
-}
-
 export async function getCatalogForAnalytics(): Promise<Product[]> {
   return getFullCatalog();
+}
+
+
+export async function getProductsWithCategories(
+  search = "",
+  category = "",
+  sort = "",
+  page = 1,
+): Promise<ProductsResponse & { categories: string[] }> {
+  const [categories, products] = await Promise.all([
+    getCategories(),
+    getProducts(search, category, sort, page),
+  ]);
+
+  return { categories, ...products };
 }

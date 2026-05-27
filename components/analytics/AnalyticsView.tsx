@@ -102,7 +102,7 @@ export function AnalyticsView() {
       </section>
 
       <section>
-        <ProductInsightsTable />
+        <ProductInsightsTable catalog={products} />
       </section>
     </div>
   );

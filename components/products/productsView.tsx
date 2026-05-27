@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PackageSearch, X } from "lucide-react";
-import { getCategories, getProducts } from "@/app/actions/products";
+import {
+  getProducts,
+  getProductsWithCategories,
+} from "@/app/actions/products";
 import { useRefetchOnTabVisible } from "@/hooks/use-refetch-on-tab-visible";
 import { ProductSearch } from "@/components/products/ProductSearch";
 import { ProductFilters } from "@/components/products/ProductFilters";
@@ -30,6 +33,7 @@ export function ProductsView({ role }: { role: Role }) {
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasCategories = useRef(false);
 
   function applyProductData(data: Awaited<ReturnType<typeof getProducts>>) {
     setProducts(data.products);
@@ -44,26 +48,26 @@ export function ProductsView({ role }: { role: Role }) {
   }
 
   useEffect(() => {
-    async function loadCategories() {
-      try {
-        const data = await getCategories();
-        setCategories(data);
-      } catch {
-        setCategories([]);
-      }
-    }
-
-    loadCategories();
-  }, []);
-
-  useEffect(() => {
     let cancelled = false;
 
     async function fetchProducts() {
       try {
-        const data = await getProducts(search, category, sort, page);
-        if (cancelled) return;
-        applyProductData(data);
+        if (!hasCategories.current) {
+          const { categories: cats, ...data } = await getProductsWithCategories(
+            search,
+            category,
+            sort,
+            page,
+          );
+          if (cancelled) return;
+          hasCategories.current = true;
+          setCategories(cats);
+          applyProductData(data);
+        } else {
+          const data = await getProducts(search, category, sort, page);
+          if (cancelled) return;
+          applyProductData(data);
+        }
       } catch (err) {
         if (cancelled) return;
         applyProductError(err);
