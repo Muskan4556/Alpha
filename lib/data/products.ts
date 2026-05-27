@@ -26,9 +26,7 @@ const SORT_MAP: Record<string, { sortBy: SortField; order: SortOrder }> = {
 
 function getEffectivePrice(product: Product): number {
   if (product.discountPercentage > 0) {
-    return (
-      product.price - (product.price * product.discountPercentage) / 100
-    );
+    return product.price - (product.price * product.discountPercentage) / 100;
   }
   return product.price;
 }

@@ -19,7 +19,9 @@ function getRole(request: NextRequest): Role | null {
 }
 
 function hasValidSession(request: NextRequest): boolean {
-  return getRole(request) !== null && !!request.cookies.get(EMAIL_COOKIE)?.value;
+  return (
+    getRole(request) !== null && !!request.cookies.get(EMAIL_COOKIE)?.value
+  );
 }
 
 function matches(pathname: string, routes: string[]) {
