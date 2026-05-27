@@ -58,6 +58,8 @@ export interface ProductsResponse {
 export type SortField = "price" | "rating" | "title" | "stock";
 export type SortOrder = "asc" | "desc";
 
+export type ProductInsightTab = "low-stock" | "latest" | "top-rated";
+
 export interface GetProductsParams {
   limit?: number;
   skip?: number;

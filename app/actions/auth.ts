@@ -3,6 +3,7 @@
 import { verifyCredentials } from "@/lib/auth";
 import { clearSession, setSession } from "@/lib/session-server";
 import type { Role } from "@/lib/types/auth";
+import { redirect } from "next/navigation";
 
 export type LoginResult =
   | { success: true; redirectTo: string }
@@ -19,7 +20,10 @@ export async function login(credentials: {
     return { success: false, error: "Invalid email or password." };
   }
 
-  await setSession(role);
+  await setSession({
+    role,
+    email: email.toLowerCase().trim(),
+  });
 
   return {
     success: true,
@@ -29,4 +33,5 @@ export async function login(credentials: {
 
 export async function logout(): Promise<void> {
   await clearSession();
+  redirect("/login");
 }

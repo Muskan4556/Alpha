@@ -2,17 +2,24 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import type { Role } from "@/lib/types/auth";
 
-const COOKIE_NAME = "role";
+const ROLE_COOKIE = "role";
+const EMAIL_COOKIE = "email";
 
 const ROLE_ROUTES: Record<Role, string[]> = {
-  admin: ["/analytics", "/products"],
-  user:  ["/products"],
+  admin: ["/analytics", "/products", "/profile"],
+  user: ["/products", "/profile"],
 };
 
 const PUBLIC_ROUTES = ["/login"];
 
 function getRole(request: NextRequest): Role | null {
-  return (request.cookies.get(COOKIE_NAME)?.value as Role) ?? null;
+  const role = request.cookies.get(ROLE_COOKIE)?.value;
+  if (role !== "admin" && role !== "user") return null;
+  return role;
+}
+
+function hasValidSession(request: NextRequest): boolean {
+  return getRole(request) !== null && !!request.cookies.get(EMAIL_COOKIE)?.value;
 }
 
 function matches(pathname: string, routes: string[]) {
@@ -22,31 +29,41 @@ function matches(pathname: string, routes: string[]) {
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const role = getRole(request);
+  const authenticated = hasValidSession(request);
 
-  // Already logged in → skip login
-  if (pathname === "/login" && role) {
-    return NextResponse.redirect(
-      new URL(role === "admin" ? "/analytics" : "/products", request.url),
-    );
+  if (pathname === "/login") {
+    if (authenticated && role) {
+      return NextResponse.redirect(
+        new URL(role === "admin" ? "/analytics" : "/products", request.url),
+      );
+    }
+
+    if (role && !request.cookies.get(EMAIL_COOKIE)?.value) {
+      const response = NextResponse.next();
+      response.cookies.delete(ROLE_COOKIE);
+      return response;
+    }
+
+    return NextResponse.next();
   }
 
-  // Public routes pass through
   if (matches(pathname, PUBLIC_ROUTES)) return NextResponse.next();
 
-  // Unauthenticated -> redirect to login
-  if (!role) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (!authenticated) {
+    const response = NextResponse.redirect(new URL("/login", request.url));
+    if (role && !request.cookies.get(EMAIL_COOKIE)?.value) {
+      response.cookies.delete(ROLE_COOKIE);
+    }
+    return response;
   }
 
-  // RBAC
-  if (!matches(pathname, ROLE_ROUTES[role])) {
+  if (role && !matches(pathname, ROLE_ROUTES[role])) {
     return NextResponse.redirect(new URL("/products", request.url));
   }
 
   return NextResponse.next();
 }
 
-// Configuration
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\.png$).*)"],
 };

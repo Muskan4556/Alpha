@@ -9,9 +9,7 @@ interface DataTableColumnHeaderProps<TData, TValue> {
   column: Column<TData, TValue>;
   title: string;
   className?: string;
-  /** First click sorts high → low (e.g. rating, stock). Default: low → high. */
-  sortDescFirst?: boolean;
-  /** Show ↑ when sorted high-first and ↓ when low-first (better for rating UX). */
+  /** For metrics like rating where "best first" should show ↑ */
   invertSortIcon?: boolean;
 }
 
@@ -19,7 +17,6 @@ export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
   className,
-  sortDescFirst = false,
   invertSortIcon = false,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
@@ -27,10 +24,8 @@ export function DataTableColumnHeader<TData, TValue>({
   }
 
   const sorted = column.getIsSorted();
-  const isDesc = sorted === "desc";
-  const isAsc = sorted === "asc";
-  const showUp = invertSortIcon ? isDesc : isAsc;
-  const showDown = invertSortIcon ? isAsc : isDesc;
+  const showUp = invertSortIcon ? sorted === "desc" : sorted === "asc";
+  const showDown = invertSortIcon ? sorted === "asc" : sorted === "desc";
 
   return (
     <Button
@@ -41,10 +36,11 @@ export function DataTableColumnHeader<TData, TValue>({
         className,
       )}
       onClick={() => {
-        if (!sorted) {
-          column.toggleSorting(sortDescFirst);
+        const current = column.getIsSorted();
+        if (!current) {
+          column.toggleSorting(column.getFirstSortDir() === "desc");
         } else {
-          column.toggleSorting(sorted === "asc");
+          column.toggleSorting(current === "asc");
         }
       }}
     >
