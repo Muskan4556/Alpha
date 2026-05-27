@@ -122,13 +122,11 @@ function getColumns(
     },
     {
       accessorKey: "rating",
-      sortDescFirst: true,
       header: ({ column }) => (
         <DataTableColumnHeader
           column={column}
           title="Rating"
           className="hidden md:flex"
-          invertSortIcon
         />
       ),
       cell: ({ row }) => (

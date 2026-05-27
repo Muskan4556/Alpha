@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
-import { fetchProductInsights } from "@/app/actions/products";
+import { getInsights } from "@/app/actions/products";
 import { DataTable } from "@/components/ui/data-table";
 import { ProductInsightsSkeleton } from "@/components/skeleton/ProductInsightsSkeleton";
 import type { ProductInsightTab } from "@/lib/types/product";
@@ -103,9 +103,9 @@ export function ProductInsightsTable() {
 
     setLoading(true);
 
-    void (async () => {
+    async function loadInsights() {
       try {
-        const data = await fetchProductInsights(tab);
+        const data = await getInsights(tab);
         if (cancelled) return;
         cacheRef.current[tab] = data;
         setRows(data);
@@ -115,7 +115,9 @@ export function ProductInsightsTable() {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    loadInsights();
 
     return () => {
       cancelled = true;

@@ -18,10 +18,15 @@ export function ProductSearch({
   const [query, setQuery] = useState(value);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (query !== value) onSearch(query);
-    }, 350);
-    return () => clearTimeout(timer);
+    const debounceTimer = setTimeout(() => {
+      const trimmedQuery = query.trim();
+
+      if (trimmedQuery !== value.trim()) {
+        onSearch(trimmedQuery);
+      }
+    }, 1000);
+
+    return () => clearTimeout(debounceTimer);
   }, [query, value, onSearch]);
 
   const handleClear = useCallback(() => {

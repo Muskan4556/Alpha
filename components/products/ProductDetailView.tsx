@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { fetchProduct } from "@/app/actions/products";
+import { getProductById } from "@/app/actions/products";
 import { ImageCarousel } from "@/components/products/ImageCarousel";
 import { PublishToggle } from "@/components/products/PublishToggle";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
   const [error, setError] = useState<string | null>(null);
 
   const refetchProduct = useCallback(async () => {
-    const data = await fetchProduct(parseInt(id, 10));
+    const data = await getProductById(parseInt(id, 10));
     setProduct(data);
     setError(data ? null : "Product not found");
   }, [id]);
@@ -49,9 +49,9 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
   useEffect(() => {
     let cancelled = false;
 
-    void (async () => {
+    async function loadProduct() {
       try {
-        const data = await fetchProduct(parseInt(id, 10));
+        const data = await getProductById(parseInt(id, 10));
         if (cancelled) return;
         setProduct(data);
         setError(data ? null : "Product not found");
@@ -62,7 +62,9 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    loadProduct();
 
     return () => {
       cancelled = true;

@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCategory } from "@/lib/utils";
+import { SORT_LABELS } from "@/lib/types/product";
 
 interface ProductFiltersProps {
   categories: string[];
@@ -35,7 +36,6 @@ export function ProductFilters({
       </div>
 
       <Select
-        key={selectedCategory}
         value={selectedCategory || undefined}
         onValueChange={onCategoryChange}
       >
@@ -51,23 +51,16 @@ export function ProductFilters({
         </SelectContent>
       </Select>
 
-      <Select
-        key={sortBy}
-        value={sortBy || undefined}
-        onValueChange={onSortChange}
-      >
+      <Select value={sortBy || undefined} onValueChange={onSortChange}>
         <SelectTrigger className="h-10 w-full rounded-xl border-white/8 bg-white/4 text-base text-white sm:w-48">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
         <SelectContent className="border-white/10 bg-[#111e1a]">
-          <SelectItem value="price-asc">Price: Low to High</SelectItem>
-          <SelectItem value="price-desc">Price: High to Low</SelectItem>
-          <SelectItem value="rating-desc">Rating: High to Low</SelectItem>
-          <SelectItem value="rating-asc">Rating: Low to High</SelectItem>
-          <SelectItem value="name-asc">Name: A to Z</SelectItem>
-          <SelectItem value="name-desc">Name: Z to A</SelectItem>
-          <SelectItem value="stock-asc">Stock: Low to High</SelectItem>
-          <SelectItem value="stock-desc">Stock: High to Low</SelectItem>
+          {Object.entries(SORT_LABELS).map(([value, label]) => (
+            <SelectItem key={value} value={value}>
+              {label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

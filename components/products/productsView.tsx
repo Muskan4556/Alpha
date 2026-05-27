@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PackageSearch, X } from "lucide-react";
-import { fetchCategories, fetchProducts } from "@/app/actions/products";
+import { getCategories, getProducts } from "@/app/actions/products";
+import { useRefetchOnTabVisible } from "@/hooks/use-refetch-on-tab-visible";
 import { ProductSearch } from "@/components/products/ProductSearch";
 import { ProductFilters } from "@/components/products/ProductFilters";
 import { ProductPagination } from "@/components/products/ProductPagination";
@@ -12,15 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ProductsTableSkeleton } from "@/components/skeleton/ProductsTableSkeleton";
 import { formatCategory } from "@/lib/utils";
 import type { Role } from "@/lib/types/auth";
-import type { Product } from "@/lib/types/product";
+import { SORT_LABELS, PAGE_SIZE, type Product } from "@/lib/types/product";
 
-const ITEMS_PER_PAGE = 12;
-
-interface ProductsViewProps {
-  role: Role;
-}
-
-export function ProductsView({ role }: ProductsViewProps) {
+export function ProductsView({ role }: { role: Role }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isAdmin = role === "admin";
@@ -31,102 +26,87 @@ export function ProductsView({ role }: ProductsViewProps) {
   const page = parseInt(searchParams.get("page") || "1", 10);
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    void fetchCategories()
-      .then(setCategories)
-      .catch(() => setCategories([]));
-  }, []);
-
-  const refetchProducts = useCallback(async () => {
-    const data = await fetchProducts(search, category, sort);
+  function applyProductData(data: Awaited<ReturnType<typeof getProducts>>) {
     setProducts(data.products);
+    setTotal(data.total);
     setError(null);
-  }, [search, category, sort]);
+  }
+
+  function applyProductError(err: unknown) {
+    setError(err instanceof Error ? err.message : "Failed to load products");
+    setProducts([]);
+    setTotal(0);
+  }
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const data = await getCategories();
+        setCategories(data);
+      } catch {
+        setCategories([]);
+      }
+    }
+
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
-    void (async () => {
+    async function fetchProducts() {
       try {
-        const data = await fetchProducts(search, category, sort);
+        const data = await getProducts(search, category, sort, page);
         if (cancelled) return;
-        setProducts(data.products);
-        setError(null);
+        applyProductData(data);
       } catch (err) {
         if (cancelled) return;
-        setError(
-          err instanceof Error ? err.message : "Failed to fetch products",
-        );
-        setProducts([]);
+        applyProductError(err);
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    fetchProducts();
 
     return () => {
       cancelled = true;
     };
-  }, [search, category, sort]);
+  }, [search, category, sort, page]);
 
-  const paginatedProducts = useMemo(() => {
-    const start = (page - 1) * ITEMS_PER_PAGE;
-    return products.slice(start, start + ITEMS_PER_PAGE);
-  }, [products, page]);
+  async function refetchProducts(silent = false) {
+    try {
+      const data = await getProducts(search, category, sort, page);
+      applyProductData(data);
+    } catch (err) {
+      if (silent) return;
+      applyProductError(err);
+    }
+  }
+
+  // Users: silent refresh 
+  useRefetchOnTabVisible(!isAdmin, () => refetchProducts(true));
+
+  function updateParams(updates: Record<string, string | null>) {
+    setLoading(true);
+    const params = new URLSearchParams(searchParams);
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+    router.push(`/products?${params.toString()}`);
+  }
 
   const hasActiveFilters = Boolean(search || category || sort);
-
-  const updateParams = useCallback(
-    (updates: Record<string, string | null>) => {
-      setLoading(true);
-      const params = new URLSearchParams(searchParams);
-      for (const [key, value] of Object.entries(updates)) {
-        if (value) params.set(key, value);
-        else params.delete(key);
-      }
-      router.push(`/products?${params.toString()}`);
-    },
-    [router, searchParams],
-  );
-
-  const handleSearch = useCallback(
-    (query: string) => updateParams({ search: query || null, page: "1" }),
-    [updateParams],
-  );
-
-  const handleCategoryChange = useCallback(
-    (cat: string) => updateParams({ category: cat || null, page: "1" }),
-    [updateParams],
-  );
-
-  const handleSortChange = useCallback(
-    (sortBy: string) => updateParams({ sort: sortBy || null, page: "1" }),
-    [updateParams],
-  );
-
-  const handlePageChange = useCallback(
-    (newPage: number) => updateParams({ page: newPage.toString() }),
-    [updateParams],
-  );
-
-  const clearAllFilters = useCallback(() => router.push("/products"), [router]);
-
-  const sortLabel = useMemo(() => {
-    const labels: Record<string, string> = {
-      "price-asc": "Price: Low to High",
-      "price-desc": "Price: High to Low",
-      "rating-desc": "Rating: High to Low",
-      "rating-asc": "Rating: Low to High",
-      "name-asc": "Name: A to Z",
-      "name-desc": "Name: Z to A",
-      "stock-asc": "Stock: Low to High",
-      "stock-desc": "Stock: High to Low",
-    };
-    return sort ? labels[sort] : null;
-  }, [sort]);
+  const sortLabel =
+    sort && sort in SORT_LABELS
+      ? SORT_LABELS[sort as keyof typeof SORT_LABELS]
+      : null;
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
@@ -139,10 +119,8 @@ export function ProductsView({ role }: ProductsViewProps) {
             "Loading catalog…"
           ) : (
             <>
-              <span className="font-medium text-white/80">
-                {products.length}
-              </span>{" "}
-              {products.length === 1 ? "product" : "products"}
+              <span className="font-medium text-white/80">{total}</span>{" "}
+              {total === 1 ? "product" : "products"}
               {isAdmin && (
                 <span className="text-white/35">
                   {" "}
@@ -155,13 +133,23 @@ export function ProductsView({ role }: ProductsViewProps) {
       </div>
 
       <div className="mt-6 space-y-4 rounded-2xl border border-white/6 bg-white/2 p-4 sm:p-5">
-        <ProductSearch key={search} value={search} onSearch={handleSearch} />
+        <ProductSearch
+          key={search}
+          value={search}
+          onSearch={(query) =>
+            updateParams({ search: query || null, page: "1" })
+          }
+        />
         <ProductFilters
           categories={categories}
           selectedCategory={category}
-          onCategoryChange={handleCategoryChange}
+          onCategoryChange={(cat) =>
+            updateParams({ category: cat || null, page: "1" })
+          }
           sortBy={sort}
-          onSortChange={handleSortChange}
+          onSortChange={(sortBy) =>
+            updateParams({ sort: sortBy || null, page: "1" })
+          }
         />
 
         {hasActiveFilters && !loading && (
@@ -170,17 +158,17 @@ export function ProductsView({ role }: ProductsViewProps) {
             {search && (
               <button
                 type="button"
-                onClick={() => handleSearch("")}
+                onClick={() => updateParams({ search: null, page: "1" })}
                 className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-sm text-white/70 hover:border-white/20 hover:text-white"
               >
                 &ldquo;{search}&rdquo;
-                <X className="size-3" />
+                <X className="size-3 cursor-pointer" />
               </button>
             )}
             {category && (
               <button
                 type="button"
-                onClick={() => handleCategoryChange("")}
+                onClick={() => updateParams({ category: null, page: "1" })}
                 className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-sm text-white/70 hover:border-white/20 hover:text-white"
               >
                 {formatCategory(category)}
@@ -190,7 +178,7 @@ export function ProductsView({ role }: ProductsViewProps) {
             {sortLabel && (
               <button
                 type="button"
-                onClick={() => handleSortChange("")}
+                onClick={() => updateParams({ sort: null, page: "1" })}
                 className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-sm text-white/70 hover:border-white/20 hover:text-white"
               >
                 {sortLabel}
@@ -199,7 +187,7 @@ export function ProductsView({ role }: ProductsViewProps) {
             )}
             <button
               type="button"
-              onClick={clearAllFilters}
+              onClick={() => router.push("/products")}
               className="text-sm font-medium text-emerald-400/70 hover:text-emerald-400"
             >
               Clear all
@@ -217,23 +205,27 @@ export function ProductsView({ role }: ProductsViewProps) {
       <div className="mt-6">
         {loading ? (
           <ProductsTableSkeleton />
-        ) : paginatedProducts.length > 0 ? (
+        ) : products.length > 0 ? (
           <>
             <ProductTable
-              products={paginatedProducts}
+              products={products}
               sort={sort}
-              onSortChange={handleSortChange}
+              onSortChange={(sortBy) =>
+                updateParams({ sort: sortBy || null, page: "1" })
+              }
               isAdmin={isAdmin}
               onVisibilityChange={refetchProducts}
             />
 
-            {products.length > ITEMS_PER_PAGE && (
+            {total > PAGE_SIZE && (
               <div className="mt-8 border-t border-white/6 pt-6">
                 <ProductPagination
                   currentPage={page}
-                  totalItems={products.length}
-                  itemsPerPage={ITEMS_PER_PAGE}
-                  onPageChange={handlePageChange}
+                  totalItems={total}
+                  itemsPerPage={PAGE_SIZE}
+                  onPageChange={(newPage) =>
+                    updateParams({ page: newPage.toString() })
+                  }
                 />
               </div>
             )}
@@ -253,8 +245,8 @@ export function ProductsView({ role }: ProductsViewProps) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={clearAllFilters}
-                className="mt-5 border-white/10 bg-transparent text-emerald-400 hover:bg-emerald-500/10"
+                onClick={() => router.push("/products")}
+                className="mt-5 border-white/10 bg-transparent text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
               >
                 Clear all filters
               </Button>

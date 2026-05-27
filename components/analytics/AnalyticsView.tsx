@@ -6,7 +6,7 @@ import { CategoryChart } from "@/components/analytics/CategoryChart";
 import { PublishPieChart } from "@/components/analytics/PublishPieChart";
 import { ProductInsightsTable } from "@/components/analytics/ProductInsightsTable";
 import { AnalyticsSkeleton } from "@/components/skeleton/AnalyticsSkeleton";
-import { fetchProducts } from "@/app/actions/products";
+import { getCatalogForAnalytics } from "@/app/actions/products";
 import type { Product } from "@/lib/types/product";
 
 export function AnalyticsView() {
@@ -16,11 +16,11 @@ export function AnalyticsView() {
   useEffect(() => {
     let cancelled = false;
 
-    void (async () => {
+    async function loadAnalytics() {
       try {
-        const data = await fetchProducts();
+        const products = await getCatalogForAnalytics();
         if (cancelled) return;
-        setProducts(data.products);
+        setProducts(products);
       } catch (error) {
         if (cancelled) return;
         console.error("Failed to fetch analytics:", error);
@@ -28,7 +28,9 @@ export function AnalyticsView() {
       } finally {
         if (!cancelled) setLoading(false);
       }
-    })();
+    }
+
+    loadAnalytics();
 
     return () => {
       cancelled = true;
