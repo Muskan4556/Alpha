@@ -143,7 +143,7 @@ export async function getProducts(
 }
 
 export async function getProduct(id: number): Promise<Product | null> {
-  const res = await fetch(`${BASE_URL}/${id}`, { cache: "no-store" });
+  const res = await fetch(`${BASE_URL}/${id}`);
 
   if (!res.ok) {
     return null;
@@ -161,7 +161,7 @@ export async function getProduct(id: number): Promise<Product | null> {
 }
 
 export async function getCategoryList(): Promise<string[]> {
-  const res = await fetch(`${BASE_URL}/category-list`, { cache: "no-store" });
+  const res = await fetch(`${BASE_URL}/category-list`);
   if (!res.ok) {
     throw new Error(`Failed to fetch category list: ${res.status}`);
   }
