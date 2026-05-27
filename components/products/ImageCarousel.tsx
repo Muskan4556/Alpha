@@ -27,7 +27,7 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
         <CarouselContent>
           {images.map((src, index) => (
             <CarouselItem key={`${src}-${index}`}>
-              <div className="relative aspect-square overflow-hidden rounded-lg border border-white/8 bg-[#111e1a] sm:aspect-4/3">
+              <div className="relative aspect-square overflow-hidden rounded-lg border border-white/8 bg-alpha-surface sm:aspect-4/3">
                 <Image
                   src={src}
                   alt={`${productName} ${index + 1}`}
@@ -45,16 +45,16 @@ export function ImageCarousel({ images, productName }: ImageCarouselProps) {
               disabled={false}
               className={cn(
                 "left-3 top-1/2 z-10 size-8 -translate-y-1/2",
-                "border-white/10 bg-[#111e1a]/90 text-white shadow-md backdrop-blur-sm",
-                "hover:bg-[#1a2e28] hover:text-white",
+                "border-white/10 bg-alpha-surface/90 text-white shadow-md backdrop-blur-sm",
+                "hover:bg-alpha-hover hover:text-white",
               )}
             />
             <CarouselNext
               disabled={false}
               className={cn(
                 "right-3 top-1/2 z-10 size-8 -translate-y-1/2",
-                "border-white/10 bg-[#111e1a]/90 text-white shadow-md backdrop-blur-sm",
-                "hover:bg-[#1a2e28] hover:text-white",
+                "border-white/10 bg-alpha-surface/90 text-white shadow-md backdrop-blur-sm",
+                "hover:bg-alpha-hover hover:text-white",
               )}
             />
           </>

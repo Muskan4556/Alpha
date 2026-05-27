@@ -13,7 +13,7 @@ export function PublishPieChart({ published, hidden }: PublishPieChartProps) {
   const publishedDeg = (publishedPct / 100) * 360;
 
   return (
-    <div className="flex h-full flex-col rounded-lg border border-white/8 bg-[#111e1a]">
+    <div className="flex h-full flex-col rounded-lg border border-white/8 bg-alpha-surface">
       <div className="border-b border-white/8 px-6 py-5">
         <h2 className="text-base font-semibold text-white">
           Published vs hidden
@@ -35,7 +35,7 @@ export function PublishPieChart({ published, hidden }: PublishPieChartProps) {
               : "rgba(16, 185, 129, 0.08)",
           }}
         >
-          <div className="absolute inset-4 flex flex-col items-center justify-center rounded-full bg-[#111e1a]">
+          <div className="absolute inset-4 flex flex-col items-center justify-center rounded-full bg-alpha-surface">
             <span className="text-2xl font-semibold tabular-nums text-emerald-400">
               {total}
             </span>

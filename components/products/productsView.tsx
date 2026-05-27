@@ -125,12 +125,6 @@ export function ProductsView({ role }: { role: Role }) {
             <>
               <span className="font-medium text-white/80">{total}</span>{" "}
               {total === 1 ? "product" : "products"}
-              {isAdmin && (
-                <span className="text-white/35">
-                  {" "}
-                  · toggle visibility in the table
-                </span>
-              )}
             </>
           )}
         </p>

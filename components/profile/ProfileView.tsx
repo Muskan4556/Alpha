@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { LogOut, ShieldCheck, User } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -19,23 +18,6 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function ProfileRow({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1 border-b border-white/6 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-      <dt className="shrink-0 text-sm text-white/45">{label}</dt>
-      <dd className="text-sm font-medium text-white/90 sm:text-right">
-        {children}
-      </dd>
-    </div>
-  );
-}
-
 export function ProfileView({ session }: ProfileViewProps) {
   const profile = getUserProfile(session.email);
   const isAdmin = session.role === "admin";
@@ -43,7 +25,7 @@ export function ProfileView({ session }: ProfileViewProps) {
 
   return (
     <div className="p-4 sm:p-6 md:p-8">
-      <header className="mb-10 border-b border-white/6 pb-8">
+      <header className="mb-8 border-b border-white/6 pb-8">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
           <div
             className={cn(
@@ -77,24 +59,33 @@ export function ProfileView({ session }: ProfileViewProps) {
       </header>
 
       <div className="max-w-2xl">
-        <section>
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-white/35">
-            Account
-          </h2>
-          <dl>
-            <ProfileRow label="Email">{session.email}</ProfileRow>
-            <ProfileRow label="Role">
+        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wider text-white/35">
+          Account
+        </h2>
+        <div className="divide-y divide-white/6">
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+            <span className="text-sm text-white/45">Email</span>
+            <span className="text-sm font-medium text-white/90 sm:text-right">
+              {session.email}
+            </span>
+          </div>
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+            <span className="text-sm text-white/45">Role</span>
+            <span className="text-sm font-medium text-white/90 sm:text-right">
               {isAdmin ? "Administrator" : "Standard user"}
-            </ProfileRow>
-            <ProfileRow label="Access">
+            </span>
+          </div>
+          <div className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+            <span className="text-sm text-white/45">Access</span>
+            <span className="text-sm font-medium text-white/90 sm:text-right">
               {isAdmin
                 ? "Analytics, products, publish controls"
                 : "Published catalog only"}
-            </ProfileRow>
-          </dl>
-        </section>
+            </span>
+          </div>
+        </div>
 
-        <form action={logout} className="mt-10 pt-6 border-t border-white/6">
+        <form action={logout} className="mt-6 border-t border-white/6 pt-6">
           <Button
             type="submit"
             variant="ghost"

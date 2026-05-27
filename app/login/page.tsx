@@ -53,13 +53,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#0b1512] px-4 font-sans sm:px-6">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-alpha-bg px-4 font-sans sm:px-6">
       {/* Grid */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-size-[40px_40px]" />
       {/* Glows */}
       <div className="pointer-events-none absolute top-[-15%] right-[-10%] h-[600px] w-[700px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.14)_0%,rgba(5,150,105,0.06)_40%,transparent_65%)]" />
       <div className="pointer-events-none absolute bottom-[-15%] left-[-10%] h-[500px] w-[500px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06)_0%,transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_90%_at_50%_50%,transparent_35%,rgba(11,21,18,0.85)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_90%_at_50%_50%,transparent_35%,rgb(var(--alpha-bg-rgb)/0.88)_100%)]" />
 
       <div className="relative z-10 mb-6 flex items-center gap-2.5">
         <BrandLogo />
@@ -69,7 +69,7 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full max-w-[360px] sm:max-w-[400px] lg:max-w-[420px]">
-        <div className="rounded-[18px] border border-white/7 bg-[#111e1a] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.5),0_0_0_0.5px_rgba(16,185,129,0.06)_inset] sm:p-7 lg:px-8 lg:py-8">
+        <div className="rounded-[18px] border border-white/7 bg-alpha-surface p-6 shadow-[0_32px_80px_rgba(0,0,0,0.5),0_0_0_0.5px_rgba(16,185,129,0.06)_inset] sm:p-7 lg:px-8 lg:py-8">
           <h1 className="mb-5 text-xl font-bold tracking-[-0.035em] text-white sm:mb-6 sm:text-[22px]">
             Welcome back
           </h1>
@@ -84,7 +84,7 @@ export default function LoginPage() {
                   variant="ghost"
                   onClick={() => pick(id)}
                   className={cn(
-                    "h-9 flex-1 cursor-pointer gap-1.5 rounded-lg border text-[13px] font-semibold tracking-[-0.015em] transition-all",
+                    "h-9 flex-1 cursor-pointer gap-1.5 rounded-lg border text-[13px] font-semibold tracking-[-0.015em] transition-all hover:bg-transparent",
                     active
                       ? "border-emerald-500 bg-emerald-500/12 text-emerald-400 hover:bg-emerald-500/16 hover:text-emerald-400"
                       : "border-white/8 bg-white/3 text-white/35 hover:border-white/14 hover:bg-white/5 hover:text-white/50",
@@ -108,7 +108,7 @@ export default function LoginPage() {
                 placeholder="you@alpha.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-10 rounded-[10px] border-white/8 bg-[#0c1714] px-[14px] text-[14px] tracking-[-0.01em] text-white/90 placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 sm:h-[42px]"
+                className="h-10 rounded-[10px] border-white/8 bg-alpha-input! px-[14px] text-[14px] tracking-[-0.01em] text-white/90 shadow-none placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 dark:bg-alpha-input! sm:h-[42px]"
               />
             </div>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-10 rounded-[10px] border-white/8 bg-[#0c1714] px-[14px] pr-10 text-[14px] tracking-[-0.01em] text-white/90 placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 sm:h-[42px]"
+                  className="h-10 rounded-[10px] border-white/8 bg-alpha-input! px-[14px] pr-10 text-[14px] tracking-[-0.01em] text-white/90 shadow-none placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 dark:bg-alpha-input! sm:h-[42px]"
                 />
                 <Button
                   type="button"

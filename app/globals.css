@@ -39,6 +39,14 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-alpha-bg: var(--alpha-bg);
+  --color-alpha-surface: var(--alpha-surface);
+  --color-alpha-input: var(--alpha-input);
+  --color-alpha-hover: var(--alpha-hover);
+  --color-alpha-price: var(--alpha-price);
+  --color-alpha-savings: var(--alpha-savings);
+  --color-alpha-savings-bg: var(--alpha-savings-bg);
+  --color-alpha-savings-border: var(--alpha-savings-border);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -84,9 +92,19 @@
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
+  --alpha-bg: #0a1311;
+  --alpha-bg-rgb: 10 19 17;
+  --alpha-surface: #111c18;
+  --alpha-input: #0d1614;
+  --alpha-hover: #1a2e28;
+  --alpha-price: rgba(236, 240, 237, 0.95);
+  --alpha-savings: #b8a0a0;
+  --alpha-savings-bg: rgba(42, 30, 30, 0.65);
+  --alpha-savings-border: rgba(90, 62, 62, 0.4);
+
+  --background: oklch(0.12 0.02 165);
   --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
+  --card: oklch(0.16 0.025 165);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);

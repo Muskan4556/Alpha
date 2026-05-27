@@ -64,7 +64,7 @@ const insightColumns: ColumnDef<Product>[] = [
     <span className="text-sm text-white/50">{formatCategory(p.category)}</span>
   )),
   insightColumn("price", "Price", (p) => (
-    <span className="text-sm tabular-nums text-emerald-400">
+    <span className="text-sm tabular-nums text-alpha-price">
       ${p.price.toFixed(2)}
     </span>
   )),
@@ -92,7 +92,7 @@ export function ProductInsightsTable({ catalog }: { catalog: Product[] }) {
   );
 
   return (
-    <div className="rounded-lg border border-white/8 bg-[#111e1a]">
+    <div className="rounded-lg border border-white/8 bg-alpha-surface">
       <div className="flex flex-col gap-4 border-b border-white/8 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-base font-semibold text-white">Products</h2>

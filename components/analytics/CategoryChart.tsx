@@ -16,7 +16,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
   const max = Math.max(...items.map((d) => d.count), 1);
 
   return (
-    <div className="rounded-lg border border-white/8 bg-[#111e1a]">
+    <div className="rounded-lg border border-white/8 bg-alpha-surface">
       <div className="border-b border-white/8 px-6 py-5">
         <h2 className="text-base font-semibold text-white">
           Category distribution

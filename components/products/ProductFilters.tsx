@@ -42,7 +42,7 @@ export function ProductFilters({
         <SelectTrigger className="h-10 w-full rounded-xl border-white/8 bg-white/4 text-base text-white sm:w-44">
           <SelectValue placeholder="All Categories" />
         </SelectTrigger>
-        <SelectContent className="border-white/10 bg-[#111e1a]">
+        <SelectContent className="border-white/10 bg-alpha-surface">
           {categories.map((cat) => (
             <SelectItem key={cat} value={cat}>
               {formatCategory(cat)}
@@ -55,7 +55,7 @@ export function ProductFilters({
         <SelectTrigger className="h-10 w-full rounded-xl border-white/8 bg-white/4 text-base text-white sm:w-48">
           <SelectValue placeholder="Sort by" />
         </SelectTrigger>
-        <SelectContent className="border-white/10 bg-[#111e1a]">
+        <SelectContent className="border-white/10 bg-alpha-surface">
           {Object.entries(SORT_LABELS).map(([value, label]) => (
             <SelectItem key={value} value={value}>
               {label}

@@ -75,7 +75,9 @@ function getColumns(
                 {product.title}
               </p>
               {product.brand && (
-                <p className="truncate text-sm text-white/40">{product.brand}</p>
+                <p className="truncate text-sm text-white/40">
+                  {product.brand}
+                </p>
               )}
             </div>
           </Link>
@@ -108,7 +110,7 @@ function getColumns(
 
         return (
           <div>
-            <span className="text-base font-semibold text-emerald-400">
+            <span className="text-base font-semibold text-alpha-price">
               ${salePrice.toFixed(2)}
             </span>
             {hasDiscount && (

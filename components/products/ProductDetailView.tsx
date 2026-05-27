@@ -85,7 +85,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
           Back to products
         </Link>
         {unavailable ? (
-          <div className="flex flex-col items-center rounded-xl border border-dashed border-white/10 bg-[#111e1a] px-6 py-16 text-center">
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-white/10 bg-alpha-surface px-6 py-16 text-center">
             <EyeOff className="size-10 text-white/25" />
             <h2 className="mt-4 text-lg font-semibold text-white/80">
               Product unavailable
@@ -118,7 +118,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
       </Link>
 
       {isAdmin && (
-        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-white/8 bg-[#111e1a] px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-white/8 bg-alpha-surface px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <p className="text-sm text-white/50">Visibility for standard users</p>
           <PublishToggle
             productId={product.id}
@@ -188,7 +188,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
 
           <div className="py-4">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-2xl font-bold tabular-nums text-emerald-400">
+              <span className="text-2xl font-bold tabular-nums text-alpha-price">
                 ${salePrice.toFixed(2)}
               </span>
               {hasDiscount && (
@@ -196,7 +196,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
                   <span className="text-sm text-white/35 line-through">
                     ${product.price.toFixed(2)}
                   </span>
-                  <span className="rounded-md bg-red-500/15 px-2 py-0.5 text-xs font-semibold text-red-400">
+                  <span className="rounded-md border border-alpha-savings-border bg-alpha-savings-bg px-2 py-0.5 text-xs font-semibold text-alpha-savings">
                     Save {Math.round(product.discountPercentage)}%
                   </span>
                 </>
@@ -249,7 +249,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
 
           <Button
             disabled={isOutOfStock}
-            className="h-10 w-full bg-emerald-500 text-sm font-semibold text-white hover:bg-emerald-600"
+            className="h-10 w-full bg-emerald-500 text-sm font-semibold text-white hover:bg-emerald-600 cursor-pointer"
           >
             <ShoppingCart className="size-4" />
             {isOutOfStock ? "Out of stock" : "Add to cart"}
@@ -269,7 +269,7 @@ export function ProductDetailView({ id, role }: ProductDetailViewProps) {
             {product.reviews.slice(0, 6).map((review, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/8 bg-[#111e1a] p-4 sm:p-5"
+                className="rounded-xl border border-white/8 bg-alpha-surface p-4 sm:p-5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-medium text-white/85">
