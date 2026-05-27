@@ -89,11 +89,11 @@ function getColumns(
       header: "Category",
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="hidden text-sm text-white/50 capitalize sm:inline">
+        <span className="text-sm text-white/50 capitalize">
           {formatCategory(row.getValue("category"))}
         </span>
       ),
-      meta: { label: "Category", headerClassName: "hidden sm:table-cell" },
+      meta: { label: "Category" },
     },
     {
       accessorKey: "price",
@@ -125,37 +125,29 @@ function getColumns(
     {
       accessorKey: "rating",
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title="Rating"
-          className="hidden md:flex"
-        />
+        <DataTableColumnHeader column={column} title="Rating" />
       ),
       cell: ({ row }) => (
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="flex items-center gap-1">
           <Star className="size-3.5 fill-amber-400 text-amber-400" />
           <span className="text-base text-white/70">
             {(row.getValue("rating") as number).toFixed(1)}
           </span>
         </div>
       ),
-      meta: { label: "Rating", headerClassName: "hidden md:table-cell" },
+      meta: { label: "Rating" },
     },
     {
       accessorKey: "stock",
       header: ({ column }) => (
-        <DataTableColumnHeader
-          column={column}
-          title="Stock"
-          className="hidden lg:flex"
-        />
+        <DataTableColumnHeader column={column} title="Stock" />
       ),
       cell: ({ row }) => (
-        <span className="hidden text-base text-white/50 lg:inline">
+        <span className="text-base text-white/50">
           {row.getValue("stock")}
         </span>
       ),
-      meta: { label: "Stock", headerClassName: "hidden lg:table-cell" },
+      meta: { label: "Stock" },
     },
     {
       accessorKey: "availabilityStatus",
@@ -166,7 +158,7 @@ function getColumns(
         return (
           <span
             className={cn(
-              "hidden rounded-md px-2 py-0.5 text-xs font-semibold lg:inline-flex",
+              "inline-flex rounded-md px-2 py-0.5 text-xs font-semibold",
               product.stock === 0
                 ? "bg-red-500/15 text-red-400"
                 : product.stock <= 10
@@ -178,7 +170,7 @@ function getColumns(
           </span>
         );
       },
-      meta: { label: "Status", headerClassName: "hidden lg:table-cell" },
+      meta: { label: "Status" },
     },
   ];
 

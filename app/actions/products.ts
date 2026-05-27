@@ -113,7 +113,6 @@ function getSortQuery(sort: string) {
   };
 }
 
-
 export async function getProducts(
   search = "",
   category = "",
@@ -138,13 +137,7 @@ export async function getProducts(
 
   const total =
     role === "user"
-      ? await countVisibleProducts(
-          search,
-          category,
-          sort,
-          data.total,
-          role,
-        )
+      ? await countVisibleProducts(search, category, sort, data.total, role)
       : data.total;
 
   return {
@@ -202,7 +195,6 @@ export async function getCategories(): Promise<string[]> {
 export async function getCatalogForAnalytics(): Promise<Product[]> {
   return getFullCatalog();
 }
-
 
 export async function getProductsWithCategories(
   search = "",

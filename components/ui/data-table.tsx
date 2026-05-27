@@ -67,7 +67,7 @@ export function DataTable<TData, TValue>({
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-xl border border-white/6",
+          "overflow-x-auto rounded-xl border border-white/6",
           className,
         )}
       >
