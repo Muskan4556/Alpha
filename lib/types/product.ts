@@ -68,3 +68,28 @@ export interface GetProductsParams {
   sortBy?: SortField;
   order?: SortOrder;
 }
+
+export const PAGE_SIZE = 10;
+
+export const SORT_MAP: Record<string, { sortBy: SortField; order: SortOrder }> =
+  {
+    "price-asc": { sortBy: "price", order: "asc" },
+    "price-desc": { sortBy: "price", order: "desc" },
+    "rating-desc": { sortBy: "rating", order: "desc" },
+    "rating-asc": { sortBy: "rating", order: "asc" },
+    "name-asc": { sortBy: "title", order: "asc" },
+    "name-desc": { sortBy: "title", order: "desc" },
+    "stock-asc": { sortBy: "stock", order: "asc" },
+    "stock-desc": { sortBy: "stock", order: "desc" },
+  };
+
+export const SORT_LABELS: Record<keyof typeof SORT_MAP, string> = {
+  "price-asc": "Price: Low to High",
+  "price-desc": "Price: High to Low",
+  "rating-desc": "Rating: High to Low",
+  "rating-asc": "Rating: Low to High",
+  "name-asc": "Name: A to Z",
+  "name-desc": "Name: Z to A",
+  "stock-asc": "Stock: Low to High",
+  "stock-desc": "Stock: High to Low",
+};
