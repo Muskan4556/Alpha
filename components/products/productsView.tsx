@@ -3,10 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PackageSearch, X } from "lucide-react";
-import {
-  getProducts,
-  getProductsWithCategories,
-} from "@/app/actions/products";
+import { getProducts, getProductsWithCategories } from "@/app/actions/products";
 import { useRefetchOnTabVisible } from "@/hooks/use-refetch-on-tab-visible";
 import { ProductSearch } from "@/components/products/ProductSearch";
 import { ProductFilters } from "@/components/products/ProductFilters";
@@ -93,7 +90,7 @@ export function ProductsView({ role }: { role: Role }) {
     }
   }
 
-  // Users: silent refresh 
+  // Users: silent refresh
   useRefetchOnTabVisible(!isAdmin, () => refetchProducts(true));
 
   function updateParams(updates: Record<string, string | null>) {

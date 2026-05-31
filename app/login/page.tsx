@@ -1,8 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Loader2,
+  Info,
+  X,
+  Copy,
+  Check,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +21,92 @@ import { ROLES } from "@/lib/data/roles";
 import type { Role } from "@/lib/types/auth";
 import { login } from "@/app/actions/auth";
 
+import { DEMO_CREDENTIALS } from "@/lib/data/auth";
+
+function CredentialsPopover({
+  role,
+  onUse,
+}: {
+  role: Role;
+  onUse: (cred: (typeof DEMO_CREDENTIALS)[number]) => void;
+}) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const filteredCredentials = DEMO_CREDENTIALS.filter((c) => c.role === role);
+
+  function copy(text: string, key: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 1800);
+    });
+  }
+
+  return (
+    <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-[14px] border border-white/10 bg-[#111c18] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.55),0_0_0_0.5px_rgba(16,185,129,0.08)_inset]">
+      <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/30">
+        {role === "admin" ? "Admin" : "User"} demo credentials
+      </p>
+      <div className="flex flex-col gap-3">
+        {filteredCredentials.map((cred) => (
+          <div
+            key={cred.email}
+            className="p-3"
+          >
+            <div className="space-y-1.5">
+              {[
+                {
+                  label: "Email",
+                  value: cred.email,
+                  key: `${cred.email}-row`,
+                },
+                {
+                  label: "Password",
+                  value: cred.password,
+                  key: `${cred.email}-pwd-row`,
+                },
+              ].map(({ label, value, key }) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between gap-2 rounded-lg bg-white/3 px-2.5 py-1.5"
+                >
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-white/25">{label} </span>
+                    <span className="font-mono text-[12px] text-white/65">
+                      {value}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copy(value, key)}
+                    className="shrink-0 text-white/25 transition-colors hover:text-white/60"
+                    aria-label={`Copy ${label}`}
+                  >
+                    {copiedKey === key ? (
+                      <Check className="size-3 text-emerald-400" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onUse(cred)}
+              className="mt-3 h-8 w-full cursor-pointer rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-[11px] font-bold uppercase tracking-wider text-emerald-400/90 transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
+            >
+              Use this
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -20,13 +115,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showCreds, setShowCreds] = useState(false);
+  const credsRef = useRef<HTMLDivElement>(null);
 
   const empty = !email || !password;
+
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (credsRef.current && !credsRef.current.contains(e.target as Node)) {
+        setShowCreds(false);
+      }
+    }
+    if (showCreds) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showCreds]);
 
   function pick(r: Role) {
     setRole(r);
     setEmail("");
     setPassword("");
+  }
+
+  function useDemoCredential(cred: (typeof DEMO_CREDENTIALS)[number]) {
+    setRole(cred.role);
+    setEmail(cred.email);
+    setPassword(cred.password);
+    setShowCreds(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,8 +174,8 @@ export default function LoginPage() {
       {/* Grid */}
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.04)_1px,transparent_1px)] bg-size-[40px_40px]" />
       {/* Glows */}
-      <div className="pointer-events-none absolute top-[-15%] right-[-10%] h-[600px] w-[700px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.14)_0%,rgba(5,150,105,0.06)_40%,transparent_65%)]" />
-      <div className="pointer-events-none absolute bottom-[-15%] left-[-10%] h-[500px] w-[500px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06)_0%,transparent_60%)]" />
+      <div className="pointer-events-none absolute top-[-15%] right-[-10%] h-150 w-175 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.14)_0%,rgba(5,150,105,0.06)_40%,transparent_65%)]" />
+      <div className="pointer-events-none absolute bottom-[-15%] left-[-10%] h-125 w-125 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06)_0%,transparent_60%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_90%_at_50%_50%,transparent_35%,rgb(var(--alpha-bg-rgb)/0.88)_100%)]" />
 
       <div className="relative z-10 mb-6 flex items-center gap-2.5">
@@ -68,13 +185,42 @@ export default function LoginPage() {
         </span>
       </div>
 
-      <div className="relative z-10 w-full max-w-[360px] sm:max-w-[400px] lg:max-w-[420px]">
+      <div className="relative z-10 w-full max-w-90 sm:max-w-100 lg:max-w-105">
         <div className="rounded-[18px] border border-white/7 bg-alpha-surface p-6 shadow-[0_32px_80px_rgba(0,0,0,0.5),0_0_0_0.5px_rgba(16,185,129,0.06)_inset] sm:p-7 lg:px-8 lg:py-8">
-          <h1 className="mb-5 text-xl font-bold tracking-[-0.035em] text-white sm:mb-6 sm:text-[22px]">
-            Welcome back
-          </h1>
+          {/* Header row */}
+          <div className="mb-5 flex items-center justify-between sm:mb-6">
+            <h1 className="text-xl font-bold tracking-[-0.035em] text-white sm:text-[22px]">
+              Welcome back
+            </h1>
 
-          <div className="mb-5 flex gap-2 sm:mb-[22px]">
+            {/* Info button + popover */}
+            <div ref={credsRef} className="relative">
+              <button
+                id="demo-credentials-toggle"
+                type="button"
+                onClick={() => setShowCreds((v) => !v)}
+                aria-label="Show demo credentials"
+                className={cn(
+                  "flex size-7 items-center justify-center rounded-full border transition-all",
+                  showCreds
+                    ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-400"
+                    : "border-white/10 bg-white/5 text-white/35 hover:border-white/18 hover:bg-white/8 hover:text-white/60",
+                )}
+              >
+                {showCreds ? (
+                  <X className="size-3.5" />
+                ) : (
+                  <Info className="size-3.5" />
+                )}
+              </button>
+
+              {showCreds && (
+                <CredentialsPopover role={role} onUse={useDemoCredential} />
+              )}
+            </div>
+          </div>
+
+          <div className="mb-5 flex gap-2 sm:mb-5.5">
             {ROLES.map(({ id, label, Icon }) => {
               const active = role === id;
               return (
@@ -98,7 +244,7 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="space-y-[7px]">
+            <div className="space-y-1.75">
               <label className="block text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/38">
                 Email
               </label>
@@ -108,11 +254,11 @@ export default function LoginPage() {
                 placeholder="you@alpha.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-10 rounded-[10px] border-white/8 bg-alpha-input! px-[14px] text-[14px] tracking-[-0.01em] text-white/90 shadow-none placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 dark:bg-alpha-input! sm:h-[42px]"
+                className="h-10 rounded-[10px] border-white/8 bg-alpha-input! px-3.5 text-sm tracking-tight text-white/90 shadow-none placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 sm:h-10.5"
               />
             </div>
 
-            <div className="space-y-[7px]">
+            <div className="space-y-1.75">
               <label className="block text-[10.5px] font-semibold uppercase tracking-[0.08em] text-white/38">
                 Password
               </label>
@@ -123,7 +269,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-10 rounded-[10px] border-white/8 bg-alpha-input! px-[14px] pr-10 text-[14px] tracking-[-0.01em] text-white/90 shadow-none placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 dark:bg-alpha-input! sm:h-[42px]"
+                  className="h-10 rounded-[10px] border-white/8 bg-alpha-input! px-3.5 pr-10 text-sm tracking-tight text-white/90 shadow-none placeholder:text-white/18 focus-visible:border-emerald-500/70 focus-visible:ring-emerald-500/15 sm:h-10.5"
                 />
                 <Button
                   type="button"
@@ -155,11 +301,11 @@ export default function LoginPage() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="size-[14px] animate-spin" /> Signing in…
+                  <Loader2 className="size-3.5 animate-spin" /> Signing in…
                 </>
               ) : (
                 <>
-                  Sign in <ArrowRight className="size-[15px]" />
+                  Sign in <ArrowRight className="size-3.5" />
                 </>
               )}
             </Button>
